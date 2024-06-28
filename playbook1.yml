@@ -1,5 +1,5 @@
 ---
-- hosts: servers
+- hosts: routers
   become: yes
   tasks:
     - name: Ensure nginx is installed
