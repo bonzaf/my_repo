@@ -1,6 +1,6 @@
 ---
-- hosts: routers
-  become: yes
+- hosts: routers, switches
+  become: yes/no
   tasks:
     - name: Ensure nginx is installed
       apt:
