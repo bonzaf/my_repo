@@ -2,39 +2,9 @@
 - name: Configure ospf on Cisco XR routers
   hosts: routers
   gather_facts: no
-  vars_files:
-    - devices_ospf_vars.yml
+  
   tasks:
-    - name: Ensure the router's SSH key is in known_hosts
-      ansible.builtin.known_hosts:
-        name: "{{ ansible_host }}"
-        key: "{{ lookup('pipe', 'ssh-keyscan -H -t ed25519 {{ ansible_host }}') }}"
-        path: /var/lib/jenkins/.ssh/known_hosts
-
-    - name: Set router-specific facts
-      set_fact:
-        router_id: "{{ hostvars[inventory_hostname]['router_id'] }}"
-        interfaces: "{{ hostvars[inventory_hostname]['interfaces'] }}"
-
-    - name: Generate OSPF configuration from template
-      template:
-        src: ospf_config.jinja
-        dest: /var/tmp/ospf_config.txt
-      with_items: "{{ interfaces }}"
-      loop_control:
-        loop_var: item
-      vars:
-        process_id: "{{ item.process_id }}"
-        area_id: "{{ item.area_id }}"
-        interface: "{{ item.interface }}"
-        cost: "{{ item.cost }}"
-        keychain: "{{ item.keychain }}"
-
-    - name: Apply OSPF configuration
-      iosxr_config:
-        src: /var/tmp/ospf_config.txt
-
-    - name: Show output from configuration task
-      debug:
-        var: config_output
-
+	- name: ospf
+	  cisco.iosxr.iosxr_config:
+		src: ospf_config.jinja
+		match: none
