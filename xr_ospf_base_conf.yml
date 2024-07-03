@@ -3,7 +3,7 @@
   hosts: routers
   gather_facts: no
   vars_files:
-    - devices_vars.yml
+    - devices_ospf_vars.yml
   tasks:
     - name: Ensure the router's SSH key is in known_hosts
       ansible.builtin.known_hosts:
