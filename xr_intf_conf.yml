@@ -16,7 +16,7 @@
     - name: Configure interface settings
       cisco.iosxr.iosxr_config:
         lines:
-          - description -- interface to R2 test2 --
+          - description -- interface to R2 test3 --
           - ip address 172.31.1.2 255.255.255.254
         parents: interface GigabitEthernet0/0/0/6
       register: config_output
