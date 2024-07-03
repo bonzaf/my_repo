@@ -1,7 +1,9 @@
 ---
-- name: Configure interface settings on Cisco ASR9000
+- name: Configure interfaces on Cisco routers
   hosts: routers
   gather_facts: no
+  vars_files:
+    - devices_vars.yml
   tasks:
     - name: Ensure the router's SSH key is in known_hosts
       ansible.builtin.known_hosts:
@@ -9,24 +11,12 @@
         key: "{{ lookup('pipe', 'ssh-keyscan -H -t ed25519 {{ ansible_host }}') }}"
         path: /var/lib/jenkins/.ssh/known_hosts
 
-    - name: Verify connection to the router
-      debug:
-        msg: "Connected to {{ ansible_host }}"
-
-    - name: Show device capabilities
-      cisco.iosxr.iosxr_facts:
-      register: iosxr_facts
-
-    - name: Display capabilities
-      debug:
-        var: iosxr_facts
-
     - name: Configure interface settings
       cisco.iosxr.iosxr_config:
         lines:
-          - description -- TO R2!  --
-          - ip address 172.31.1.0 255.255.255.254
-        parents: interface GigabitEthernet0/0/0/6
+          - description {{ hostvars[inventory_hostname]['description'] }}
+          - ip address {{ hostvars[inventory_hostname]['ip_address'] }} {{ hostvars[inventory_hostname]['netmask'] }}
+        parents: interface {{ hostvars[inventory_hostname]['interface'] }}
       register: config_output
 
     - name: Show output from configuration task
