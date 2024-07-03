@@ -6,21 +6,30 @@
     - name: Ensure the router's SSH key is in known_hosts
       ansible.builtin.known_hosts:
         name: "{{ ansible_host }}"
-        key: "{{ lookup('pipe', 'ssh-keyscan -t ed25519 {{ ansible_host }}') }}"
-        path: /root/.ssh/known_hosts
+        key: "{{ lookup('pipe', 'ssh-keyscan -H -t ed25519 {{ ansible_host }}') }}"
+        path: /var/lib/jenkins/.ssh/known_hosts
 
     - name: Verify connection to the router
       debug:
         msg: "Connected to {{ ansible_host }}"
 
+    - name: Show device capabilities
+      cisco.iosxr.iosxr_facts:
+      register: iosxr_facts
+
+    - name: Display capabilities
+      debug:
+        var: iosxr_facts
+
     - name: Configure interface settings
       cisco.iosxr.iosxr_config:
         lines:
-          - description -- interface to R2 test5 --
-          - ip address 172.31.1.2 255.255.255.254
+          - description test interface
+          - ip address 172.31.1.1 255.255.255.254
         parents: interface GigabitEthernet0/0/0/6
       register: config_output
 
     - name: Show output from configuration task
       debug:
         var: config_output
+
