@@ -11,6 +11,15 @@
         key: "{{ lookup('pipe', 'ssh-keyscan -H -t ed25519 {{ ansible_host }}') }}"
         path: /var/lib/jenkins/.ssh/known_hosts
 
+    - name: Set router-specific facts
+      set_fact:
+        router_id: "{{ hostvars[inventory_hostname]['router_id'] }}"
+        interfaces: "{{ hostvars[inventory_hostname]['interfaces'] }}"
+
+    - name: Debug router-specific facts
+      debug:
+        msg: "Router ID: {{ router_id }} - Interfaces: {{ interfaces }}"
+
     - name: Configure ospf settings
       cisco.iosxr.iosxr_ospf_interfaces:
         config:
@@ -27,7 +36,7 @@
                   message_digest:
                     keychain: "{{ item.keychain }}"
             state: merged
-      loop: "{{ hostvars[inventory_hostname]['interfaces'] }}"
+      loop: "{{ interfaces }}"
       register: config_output
 
     - name: Show output from configuration task
