@@ -2,9 +2,20 @@
 - name: Configure ospf on Cisco XR routers
   hosts: routers
   gather_facts: no
-  
+  vars_files:
+    - devices_ospf_vars.yml
+
   tasks:
-	- name: ospf
-	  cisco.iosxr.iosxr_config:
-		src: ospf_config.jinja
-		match: none
+    - name: Generate OSPF configuration
+      template:
+        src: ospf_template.jinja
+        dest: "/tmp/ospf_{{ inventory_hostname }}.conf"
+      with_dict: "{{ hostvars }}"
+      loop_control:
+        loop_var: device
+
+    - name: Push OSPF configuration to device
+      cisco.iosxr.iosxr_config:
+        src: "/tmp/ospf_{{ inventory_hostname }}.conf"
+        match: none
+
