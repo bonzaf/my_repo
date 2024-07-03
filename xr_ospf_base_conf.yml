@@ -17,7 +17,7 @@
           - name: "{{ item.interface }}"
             type: gigabitethernet
             address_family:
-              - afi: "{{ item.afi}}"
+              - afi: "{{ item.afi }}"
                 processes:
                   - process_id: "{{ item.process_id }}"
                     area:
@@ -26,7 +26,11 @@
                 authentication:
                   message_digest:
                     keychain: "{{ item.keychain }}"
+            state: merged
+      loop: "{{ hostvars[inventory_hostname]['interfaces'] }}"
+      register: config_output
 
-        loop: "{{ interfaces  }}"
-        state: merged
+    - name: Show output from configuration task
+      debug:
+        var: config_output
 
