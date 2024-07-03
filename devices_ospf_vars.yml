@@ -1,0 +1,15 @@
+---
+R1:
+  interface: Gi0/0/0/6
+  afi: ipv4
+  process_id: CORE
+  area_id: 0.0.0.0
+  cost: 10
+  keychain: cisco
+R2:
+  interface: Gi0/0/0/6
+  afi: ipv4
+  process_id: CORE
+  area_id: 0.0.0.0
+  cost: 10
+  keychain: cisco
