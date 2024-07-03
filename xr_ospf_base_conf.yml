@@ -13,26 +13,26 @@
 
     - name: Set router-specific facts
       set_fact:
+        router_id: "{{ hostvars[inventory_hostname]['router_id'] }}"
         interfaces: "{{ hostvars[inventory_hostname]['interfaces'] }}"
 
-    - name: Configure ospf settings
-      cisco.iosxr.iosxr_ospf_interfaces:
-        config:
-          - name: "{{ item.interface }}"
-            type: gigabitethernet
-            address_family:
-              - afi: "{{ item.afi }}"
-                processes:
-                  - process_id: "{{ item.process_id }}"
-                    area:
-                      area_id: "{{ item.area_id }}"
-                cost: "{{ item.cost }}"
-                authentication:
-                  message_digest:
-                    keychain: "{{ item.keychain }}"
-            state: merged
-      loop: "{{ interfaces }}"
-      register: config_output
+    - name: Generate OSPF configuration from template
+      template:
+        src: ospf_config.j2
+        dest: /var/tmp/ospf_config.txt
+      with_items: "{{ interfaces }}"
+      loop_control:
+        loop_var: item
+      vars:
+        process_id: "{{ item.process_id }}"
+        area_id: "{{ item.area_id }}"
+        interface: "{{ item.interface }}"
+        cost: "{{ item.cost }}"
+        keychain: "{{ item.keychain }}"
+
+    - name: Apply OSPF configuration
+      iosxr_config:
+        src: /var/tmp/ospf_config.txt
 
     - name: Show output from configuration task
       debug:
