@@ -10,6 +10,3 @@ R2:
     - { interface: "GigabitEthernet0/0/0/6", afi: ipv4, process_id: CORE, area_id: 0.0.0.0, cost: 10, keychain: cisco1}
     - { interface: "Loopback0", afi: ipv4, process_id: CORE, area_id: 0.0.0.0, cost: 10, keychain: cisco1, passive: enable}
 
-# Set variables for the current host
-interfaces: "{{ vars[inventory_hostname].interfaces }}"
-router_id: "{{ vars[inventory_hostname].router_id }}"
