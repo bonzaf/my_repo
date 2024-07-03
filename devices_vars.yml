@@ -4,8 +4,16 @@ R1:
   description: 'Uplink to ISP1'
   ip_address: 192.168.10.0
   netmask: 255.255.255.254
+  interface: Loopback0
+  description: 'ROUTER-ID'
+  ip_address: 1.1.1.1
+  netmask: 255.255.255.255
 R2:
   interface: Gi0/0/0/1
   description: 'Uplink to ISP2'
   ip_address: 192.168.20.1
   netmask: 255.255.255.254
+  interface: Loopback0
+  description: 'ROUTER-ID'
+  ip_address: 2.2.2.2
+  netmask: 255.255.255.255
