@@ -18,7 +18,7 @@
 
     - name: Generate OSPF configuration from template
       template:
-        src: ospf_config.j2
+        src: ospf_config.jinja
         dest: /var/tmp/ospf_config.txt
       with_items: "{{ interfaces }}"
       loop_control:
