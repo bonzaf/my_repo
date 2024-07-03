@@ -14,17 +14,19 @@
     - name: Configure ospf settings
       cisco.iosxr.iosxr_ospf_interfaces:
         config:
-          - name: "{{ lookup('vars', inventory_hostname)['interface'] }}"
+          - name: "{{ item.interface }}"
             type: gigabitethernet
             address_family:
-              - afi: "{{ lookup('vars', inventory_hostname)['afi'] }}"
+              - afi: "{{ item.afi}}"
                 processes:
-                  - process_id: "{{ lookup('vars', inventory_hostname)['process_id'] }}"
+                  - process_id: "{{ item.process_id }}"
                     area:
-                      area_id: "{{ lookup('vars', inventory_hostname)['area_id'] }}"
-                cost: "{{ lookup('vars', inventory_hostname)['cost'] }}"
+                      area_id: "{{ item.area_id }}"
+                cost: "{{ item.cost }}"
                 authentication:
                   message_digest:
-                    keychain: "{{ lookup('vars', inventory_hostname)['keychain'] }}"
+                    keychain: "{{ item.keychain }}"
+
+        loop: "{{ interfaces  }}"
         state: merged
 
