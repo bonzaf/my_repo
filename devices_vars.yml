@@ -2,10 +2,10 @@
 R1:
   interface: Gi0/0/0/0
   description: 'Uplink to ISP1'
-  ip: 192.168.1.0
-  mask: 255.255.255.254
+  ip_address: 192.168.1.0
+  netmask: 255.255.255.254
 R2:
   interface: Gi0/0/0/1
   description: 'Uplink to ISP2'
-  ip: 192.168.100
-  mask: 255.255.255.254
+  ip_address: 192.168.100.1
+  netmask: 255.255.255.254
