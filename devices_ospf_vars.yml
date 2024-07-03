@@ -2,9 +2,9 @@
 R1:
   router_id: "1.1.1.1"
   interfaces:
-    - { interface: "GigabitEthernet0/0/0/6", afi: ipv4, process_id: CORE, area_id: 0.0.0.0, cost: 10, keychain: cisco1}
+    - { interface: "GigabitEthernet0/0/0/6", afi: ipv4, process_id: CORE, area_id: 0.0.0.0, cost: 10, keychain: cisco}
 R2:
   router_id: "2.2.2.2"
   interfaces:
-    - { interface: "GigabitEthernet0/0/0/6", afi: ipv4, process_id: CORE, area_id: 0.0.0.0, cost: 10, keychain: cisco1}
+    - { interface: "GigabitEthernet0/0/0/6", afi: ipv4, process_id: CORE, area_id: 0.0.0.0, cost: 10, keychain: cisco}
 
