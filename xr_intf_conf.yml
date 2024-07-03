@@ -14,9 +14,9 @@
     - name: Configure interface settings
       cisco.iosxr.iosxr_config:
         lines:
-          - description {{ hostvars[inventory_hostname]['description'] }}
-          - ip address {{ hostvars[inventory_hostname]['ip_address'] }} {{ hostvars[inventory_hostname]['netmask'] }}
-        parents: interface {{ hostvars[inventory_hostname]['interface'] }}
+          - description {{ lookup('vars', inventory_hostname)['description'] }}
+          - ip address {{ lookup('vars', inventory_hostname)['ip_address'] }} {{ lookup('vars', inventory_hostname)['netmask'] }}
+        parents: interface {{ lookup('vars', inventory_hostname)['interface'] }}
       register: config_output
 
     - name: Show output from configuration task
