@@ -9,10 +9,10 @@
     - name: Render OSPF configuration from template
       template:
         src: ospf_template.jinja
-        dest: /tmp/ospf_config.txt
+        dest: "/tmp/ospf_config_{{ inventory_hostname }}.txt"
 
     - name: Apply OSPF configuration
       iosxr_config:
-        src: /tmp/ospf_config.txt
+        src: "/tmp/ospf_config_{{ inventory_hostname }}.txt"
         replace: line
 
