@@ -6,7 +6,7 @@
     - devices_ospf_vars.yml
 
   tasks:
-    - name: Render OSPF configuration from template
+    - name: Render OSPF configuration from template1
       template:
         src: ospf_template.jinja
         dest: "/tmp/ospf_config_{{ inventory_hostname }}.txt"
