@@ -1,17 +1,19 @@
-router ospf {{ process_id }}
+router ospf {{ interfaces[0].process_id }}
  nsr
  log adjacency changes detail
  router-id {{ router_id }}
  auto-cost reference-bandwidth 1000000
  max-metric router-lsa on-startup 300
- area {{ area_id }}
-  interface {{ interface }}
+{% for iface in interfaces %}
+ area {{ iface.area_id }}
+  interface {{ iface.interface }}
    bfd minimum-interval 100
    bfd fast-detect
    bfd multiplier 3
-   cost {{ cost }}
+   cost {{ iface.cost }}
    network point-to-point
   !
+{% endfor %}
   interface Loopback0
    passive enable
   !

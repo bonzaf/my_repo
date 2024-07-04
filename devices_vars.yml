@@ -1,7 +1,7 @@
 ---
 R1:
   interface: Gi0/0/0/0
-  description: 'Uplink to ISP1'
+  description: 'Uplink to ISP11'
   ip_address: 192.168.10.0
   netmask: 255.255.255.254
   interface: Loopback0
@@ -10,7 +10,7 @@ R1:
   netmask: 255.255.255.255
 R2:
   interface: Gi0/0/0/1
-  description: 'Uplink to ISP2'
+  description: 'Uplink to ISP22'
   ip_address: 192.168.20.1
   netmask: 255.255.255.254
   interface: Loopback0
