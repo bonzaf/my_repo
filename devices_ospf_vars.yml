@@ -2,11 +2,16 @@
 R1:
   router_id: "1.1.1.1"
   interfaces:
-    - { interface: "GigabitEthernet0/0/0/6", afi: ipv4, process_id: CORE, area_id: 0.0.0.0, cost: 10, keychain: cisco}
+    - { interface: "GigabitEthernet0/0/0/6", afi: ipv4, process_id: XHAUL, area_id: 0.0.0.0, cost: 10, keychain: cisco}
 R2:
   router_id: "2.2.2.2"
   interfaces:
-    - { interface: "GigabitEthernet0/0/0/6", afi: ipv4, process_id: CORE, area_id: 0.0.0.0, cost: 10, keychain: cisco}
+    - { interface: "GigabitEthernet0/0/0/6", afi: ipv4, process_id: XHAUL, area_id: 0.0.0.0, cost: 10, keychain: cisco}
+    - { interface: "GigabitEthernet0/0/0/5", afi: ipv4, process_id: REGION, area_id: 0.0.0.0, cost: 10, keychain: cisco}
+R3:
+  router_id: "3.3.3.3"
+  interfaces:
+    - { interface: "GigabitEthernet0/0/0/6", afi: ipv4, process_id: XHAUL, area_id: 0.0.0.0, cost: 10, keychain: cisco}
 # Set variables for the current host
 interfaces: "{{ vars[inventory_hostname].interfaces }}"
 router_id: "{{ vars[inventory_hostname].router_id }}"
