@@ -1,0 +1,53 @@
+---
+- name: Collect data from Cisco IOS-XR routers and update NetBox
+  hosts: routers
+  gather_facts: no
+  tasks:
+    - name: Collect device facts
+      cisco.iosxr.iosxr_facts:
+        gather_subset: "min"
+      register: device_facts
+
+    - name: Collect interface facts
+      cisco.iosxr.iosxr_l3_interfaces:
+        config: []
+        state: gathered
+      register: interface_facts
+
+    - name: Debug interface facts
+      debug:
+        var: interface_facts
+
+    - name: Determine primary and OOB IP addresses
+      set_fact:
+        primary_ipv4: "{{ (interface_facts.gathered | map(attribute='ipv4') | list).0 }}"
+        oob_ipv4: "{{ (interface_facts.gathered | selectattr('name', 'search', '^Mgmt') | map(attribute='ipv4') | list).0 }}"
+
+    - name: Debug primary and OOB IP addresses
+      debug:
+        msg:
+          - "Primary IPv4: {{ primary_ipv4 }}"
+          - "OOB IPv4: {{ oob_ipv4 }}"
+
+
+
+    - name: Add device to NetBox
+      uri:
+        url: http://netbox.example.com/api/dcim/devices/
+        method: POST
+        headers:
+          Authorization: "Token f1801f2f519ed714f24fd89b5cc63c598da711f6"
+          Content-Type: "application/json"
+        body_format: json
+        body: |
+          {
+            "name": "{{ inventory_hostname }}",
+            "device_type": "{{ hostvars[inventory_hostname].device_type }}",
+            "role": "{{ hostvars[inventory_hostname].role }}",
+            "site": "{{ hostvars[inventory_hostname].site }}",
+            "serial": "{{ device_facts.ansible_facts.ansible_net_serialnum }}",
+            "primary_ip.address": "{{ primary_ipv4 }}",
+            "out_of_band_ip.address": "{{ oob_ipv4 }}"
+          }
+        status_code: 201
+
