@@ -1,0 +1,37 @@
+data:
+    0038ff2792c1445c95290c6da074285d:
+        host.hw.type: asr9k
+        host.platform: ASR9k
+        host.platform.id: 2
+        host.name: R1
+        host.site: SITE1
+        host.role: GW
+        host.role.id: 1
+        host.site.id: 2
+        host.dev.type.id: 3
+        host.dev.type: ASR9010
+        host.ip.addr: 1.1.1.1
+        host.oob.ip: 10.0.0.3
+    00b3ba6b701e4615ba55ef4db9a2f902:
+        host.hw.type: xrv
+        host.name: R2
+        host.site: SITE2
+        host.role: AGG
+        host.role.id: 2
+        host.site.id: 4
+        host.dev.type.id: 1
+        host.dev.type: IOS-XRv 9000
+        host.ip.addr: 1.1.1.1
+        host.oob.ip: 10.0.0.2
+    01500aaff0b04fdd89f323da70be90d7:
+        host.hw.type: ncs54
+        host.name: R3
+        host.site: SITE3
+        host.site.id: 3
+        host.role: CSG
+        host.role.id: 3
+        host.dev.type.id: 3
+        host.dev.type: NCS540
+        host.ip.addr: 1.1.1.1
+        host.oob.ip: 10.0.0.7
+

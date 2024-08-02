@@ -1,0 +1,489 @@
+RP/0/RP0/CPU0:R1#
+Thu Aug  1 10:11:21.766 UTC
+Building configuration...
+!! IOS XR Configuration 7.4.2
+!! Last configuration change at Mon Jul 29 07:21:40 2024 by sa
+!
+hostname R1
+username sa
+ group root-lr
+ group cisco-support
+ secret 10 $6$wuKGq/iZYR7N5q/.$JkPosWRsWS4xTi8Ql6XKxdz5.XzBj1Vp1d/Rp9jOIVUhO65DmaduSC/SSeV8lEOC3lvs.L.DGU5F2hFEYhteY.
+!
+username cisco
+ group root-lr
+ group cisco-support
+ secret 10 $6$UZJD//NpHEx22//.$7E5mcFWafHMj7V2VXWg78CRUqKCGVSFE5jBW9VOeAmxbvsDIDtLHHV0U1ooGpXqbwGEwr4BvrXccsRN/I.lUa0
+!
+username GAUNO
+ group root-lr
+ group cisco-support
+ secret 10 $6$wuKGq/iZYR7N5q/.$JkPosWRsWS4xTi8Ql6XKxdz5.XzBj1Vp1d/Rp9jOIVUhO65DmaduSC/SSeV8lEOC3lvs.L.DGU5F2hFEYhteY.
+!
+aaa authorization exec default local
+aaa authorization commands default none
+aaa authentication login default local
+cdp
+vrf OVERRIDE
+ address-family ipv4 unicast
+  import route-target
+   25106:2
+   65000:2
+  !
+  export route-target
+   65000:1
+   65000:2
+  !
+ !
+!
+line default
+ authorization exec default
+ authorization commands default
+ login authentication default
+ exec-timeout 60 0
+ session-limit 10
+ session-timeout 100
+ transport input all
+ transport output all
+!
+vty-pool default 0 99 line-template default
+call-home
+ service active
+ contact smart-licensing
+ profile CiscoTAC-1
+  active
+  destination transport-method http
+ !
+!
+ipv4 access-list EPNM_ACL
+ 10 permit ipv4 172.30.216.0 0.0.0.255 any
+!
+ipv4 access-list ACL_SELECT_SIP
+ 10 permit udp any any eq 5060
+!
+ipv4 access-list ACL_SELECT_UDP
+ 10 permit udp any any
+!
+class-map match-all CM_SELECT_RTP
+ match access-group ipv4 ACL_SELECT_UDP 
+ end-class-map
+! 
+class-map match-all CM_SELECT_SIP
+ match access-group ipv4 ACL_SELECT_SIP 
+ end-class-map
+! 
+class-map match-any CM_NNI-BULK_QG
+ match qos-group 1 
+ end-class-map
+! 
+class-map match-any CM_NNI-BULK_EXP
+ match precedence 1 
+ match mpls experimental topmost 1 
+ end-class-map
+! 
+class-map match-any CM_NNI-VOICE_QG
+ match qos-group 5 
+ end-class-map
+! 
+class-map match-any CM_NNI-VIDEO-MM_QG
+ match qos-group 4 
+ end-class-map
+! 
+class-map match-any CM_NNI-SCAVANGER_QG
+ match qos-group 7 
+ end-class-map
+! 
+class-map match-any CM_NNI-SIGNALING_QG
+ match qos-group 3 
+ end-class-map
+! 
+class-map match-any CM_NNI-SCAVANGER_EXP
+ match precedence 7 
+ match mpls experimental topmost 7 
+ end-class-map
+! 
+class-map match-any CM_NNI-NET-CONTROL_QG
+ match qos-group 6 
+ end-class-map
+! 
+class-map match-any CM_NNI-VOICE_EXP_DSCP
+ match mpls experimental topmost 5 
+ match precedence 5 
+ end-class-map
+! 
+class-map match-any CM_NNI-VIDEO-MM_EXP_DSCP
+ match mpls experimental topmost 4 
+ match precedence 4 
+ end-class-map
+! 
+class-map match-any CM_NNI-SIGNALING_EXP_DSCP
+ match mpls experimental topmost 3 
+ match precedence 3 
+ end-class-map
+! 
+class-map match-any CM_NNI-TRANSACTION-OAM_QG
+ match qos-group 2 
+ end-class-map
+! 
+class-map match-any CM_NNI-NET-CONTROL_EXP_DSCP
+ match mpls experimental topmost 6 
+ match precedence 6 
+ end-class-map
+! 
+class-map match-any CM_NNI-TRANSACTION-OAM_EXP_DSCP
+ match mpls experimental topmost 2 
+ match precedence 2 
+ end-class-map
+! 
+policy-map PM_NNI_IN
+ class CM_NNI-NET-CONTROL_EXP_DSCP
+  set qos-group 6
+ ! 
+ class CM_NNI-VOICE_EXP_DSCP
+  set qos-group 5
+ ! 
+ class CM_NNI-VIDEO-MM_EXP_DSCP
+  set qos-group 4
+ ! 
+ class CM_NNI-SIGNALING_EXP_DSCP
+  set qos-group 3
+ ! 
+ class CM_NNI-TRANSACTION-OAM_EXP_DSCP
+  set qos-group 2
+ ! 
+ class CM_NNI-BULK_EXP
+  set qos-group 1
+ ! 
+ class CM_NNI-SCAVANGER_EXP
+  set qos-group 7
+ ! 
+ class class-default
+  set qos-group 0
+ ! 
+ end-policy-map
+! 
+policy-map PM_NNI_MARK_OUT
+ class CM_NNI-NET-CONTROL_QG
+  set mpls experimental imposition 6
+ ! 
+ class CM_NNI-VOICE_QG
+  set mpls experimental imposition 5
+ ! 
+ class CM_NNI-VIDEO-MM_QG
+  set mpls experimental imposition 4
+ ! 
+ class CM_NNI-SIGNALING_QG
+  set mpls experimental imposition 3
+ ! 
+ class CM_NNI-TRANSACTION-OAM_QG
+  set mpls experimental imposition 2
+ ! 
+ class CM_NNI-BULK_QG
+  set mpls experimental imposition 1
+ ! 
+ class CM_NNI-SCAVANGER_QG
+  set mpls experimental imposition 7
+ ! 
+ class class-default
+  set mpls experimental imposition 0
+ ! 
+ end-policy-map
+! 
+policy-map PM_CUSTOMER_SIP_RTP
+ class CM_SELECT_SIP
+  set dscp cs3
+  set qos-group 3
+ ! 
+ class CM_SELECT_RTP
+  set dscp ef
+  set qos-group 5
+ ! 
+ class class-default
+  police rate 50 mbps 
+  ! 
+ ! 
+ end-policy-map
+! 
+interface Loopback0
+ description ROUTER-ID
+ ipv4 address 1.1.1.1 255.255.255.255
+!
+interface Loopback20
+ ipv4 address 20.20.20.20 255.255.255.255
+!
+interface Loopback100
+ vrf OVERRIDE
+ ipv4 address 100.100.100.100 255.255.255.255
+!
+interface MgmtEth0/RP0/CPU0/0
+ ipv4 address 10.0.0.3 255.255.255.0
+!
+interface GigabitEthernet0/0/0/0
+ shutdown
+!
+interface GigabitEthernet0/0/0/1
+ description Uplink to ISP2
+ ipv4 address 192.168.20.1 255.255.255.254
+!
+interface GigabitEthernet0/0/0/2
+ shutdown
+!
+interface GigabitEthernet0/0/0/3
+ shutdown
+!
+interface GigabitEthernet0/0/0/4
+ shutdown
+!
+interface GigabitEthernet0/0/0/5
+ shutdown
+!
+interface GigabitEthernet0/0/0/6
+ description -- TO R2!  --
+ cdp
+ ipv4 address 172.31.1.0 255.255.255.254
+!
+extcommunity-set opaque ES-OP_OAM_SRTE_COLOR
+  200
+end-set
+!
+route-policy PASS
+  pass
+end-policy
+!
+route-policy TABLE-POLICY
+  if destination in (2.2.2.2/32) then
+    set administrative-distance 150
+  else
+    pass
+  endif
+end-policy
+!
+route-policy BGP_LOOPBACK_0
+  set label-index 1001
+  set community (65000:31210)
+  set aigp-metric igp-cost
+end-policy
+!
+route-policy ORIGINATE-IOT_MTS
+  set community (65000:30116, 65000:30012, 65000:32413)
+end-policy
+!
+route-policy EVPN-COMMUNITY-SET
+  set community (65000:32413, 25106:661)
+end-policy
+!
+router isis ACCESS-TEST
+ set-overload-bit on-startup 360
+ is-type level-2-only
+ net 49.2123.0000.1001.00
+ nsr
+ nsf cisco
+ log adjacency changes
+ lsp-gen-interval maximum-wait 5000 initial-wait 50 secondary-wait 200
+ lsp-refresh-interval 65000
+ max-lsp-lifetime 65535
+ lsp-password keychain ISIS-KEY
+ address-family ipv4 unicast
+  metric-style wide
+  advertise passive-only
+  mpls traffic-eng level-2-only
+  mpls traffic-eng router-id Loopback0
+  spf-interval maximum-wait 5000 initial-wait 50 secondary-wait 200
+  segment-routing mpls sr-prefer
+  spf prefix-priority critical tag 5000
+  spf prefix-priority high tag 1000
+  mpls ldp auto-config
+ !
+ interface Loopback0
+  passive
+  circuit-type level-2-only
+  address-family ipv4 unicast
+   prefix-sid index 1001
+  !
+ !
+ interface GigabitEthernet0/0/0/1
+  circuit-type level-2-only
+  bfd minimum-interval 50
+  bfd multiplier 3
+  bfd fast-detect ipv4
+  point-to-point
+  lsp-interval 1
+  hello-padding disable
+  hello-password keychain ISIS-KEY
+  lsp fast-flood threshold 15 level 2
+  link-down fast-detect
+  address-family ipv4 unicast
+   fast-reroute per-prefix
+   fast-reroute per-prefix ti-lfa
+   metric 10
+   adjacency-sid absolute 15203
+   adjacency-sid absolute 15253 protected
+  !
+ !
+!
+router ospf XHAUL
+ nsr
+ log adjacency changes detail
+ router-id 2.2.2.2
+ segment-routing mpls
+ segment-routing sr-prefer
+ auto-cost reference-bandwidth 1000000
+ max-metric router-lsa on-startup 300
+ area 0.0.0.0
+  interface Loopback0
+   passive enable
+   prefix-sid index 1001
+  !
+  interface GigabitEthernet0/0/0/5
+   bfd minimum-interval 100
+   bfd fast-detect
+   bfd multiplier 3
+   cost 10
+   network point-to-point
+  !
+  interface GigabitEthernet0/0/0/6
+   bfd minimum-interval 100
+   bfd fast-detect
+   bfd multiplier 3
+   cost 10
+   network point-to-point
+  !
+ !
+!
+router bgp 65000
+ nsr
+ bgp router-id 1.1.1.1
+ mpls activate
+  interface GigabitEthernet0/0/0/6
+ !
+ bgp graceful-restart
+ bgp log neighbor changes detail
+ ibgp policy out enforce-modifications
+ address-family ipv4 unicast
+  table-policy TABLE-POLICY
+  network 1.1.1.1/32 route-policy BGP_LOOPBACK_0
+  allocate-label all
+ !
+ address-family vpnv4 unicast
+  retain route-target all
+ !
+ address-family ipv4 rt-filter
+ !
+ address-family ipv4 mvpn
+ !
+ address-family l2vpn evpn
+ !
+ address-family link-state link-state
+ !
+ neighbor 2.2.2.2
+  remote-as 25106
+  bfd fast-detect
+  bfd multiplier 3
+  bfd minimum-interval 250
+  ebgp-multihop 255
+  dscp cs6
+  description -= R2 =-
+  update-source Loopback0
+  address-family ipv4 labeled-unicast
+   send-community-ebgp
+   route-policy PASS in
+   route-policy PASS out
+   send-extended-community-ebgp
+   next-hop-unchanged
+  !
+  address-family vpnv4 unicast
+   maximum-prefix 8000 75 restart 3
+   route-policy PASS in
+   route-policy PASS out
+   next-hop-unchanged
+  !
+  address-family l2vpn evpn
+   maximum-prefix 8000 75 restart 3
+   send-community-ebgp
+   route-policy PASS in
+   route-policy PASS out
+   send-extended-community-ebgp
+   next-hop-unchanged
+  !
+ !
+ vrf OVERRIDE
+  rd 65000:1
+  address-family ipv4 unicast
+   redistribute connected
+   redistribute static
+  !
+ !
+!
+evpn
+ evi 2139
+  control-word-disable
+  unknown-unicast-suppression
+ !
+!
+mpls oam
+!
+segment-routing
+ global-block 16000 23999
+ local-block 15000 15999
+ traffic-eng
+  logging
+   policy status
+  !
+ !
+!
+snmp-server traps ospf lsa lsa-maxage
+snmp-server traps ospf lsa lsa-originate
+snmp-server traps ospf errors bad-packet
+snmp-server traps ospf errors authentication-failure
+snmp-server traps ospf errors config-error
+snmp-server traps ospf errors virt-bad-packet
+snmp-server traps ospf errors virt-authentication-failure
+router pim
+ vrf IPTV-MCAST
+  address-family ipv4
+   mdt c-multicast-routing bgp
+   !
+   rp-address 93.84.124.255
+  !
+ !
+!
+ssh client v2
+ssh server enable cipher aes-cbc 3des-cbc
+ssh server logging
+ssh server session-limit 20
+ssh server v2
+ssh server vrf default
+end
+
+RP/0/RP0/CPU0:R1#
+Thu Aug  1 10:11:22.441 UTC
+NAME: "0/0", DESCR: "Cisco IOS-XRv 9000 Centralized Line Card"
+PID: R-IOSXRV9000-LC-C , VID: V01, SN: 54D569099E8
+
+NAME: "0/0/0", DESCR: "N/A"
+PID: PORT-1G-NIC       , VID: N/A, SN: N/A
+
+NAME: "0/0/1", DESCR: "N/A"
+PID: PORT-1G-NIC       , VID: N/A, SN: N/A
+
+NAME: "0/0/2", DESCR: "N/A"
+PID: PORT-1G-NIC       , VID: N/A, SN: N/A
+
+NAME: "0/0/3", DESCR: "N/A"
+PID: PORT-1G-NIC       , VID: N/A, SN: N/A
+
+NAME: "0/0/4", DESCR: "N/A"
+PID: PORT-1G-NIC       , VID: N/A, SN: N/A
+
+NAME: "0/0/5", DESCR: "N/A"
+PID: PORT-1G-NIC       , VID: N/A, SN: N/A
+
+NAME: "0/0/6", DESCR: "N/A"
+PID: PORT-10G-NIC      , VID: N/A, SN: N/A
+
+NAME: "0/RP0", DESCR: "Cisco IOS-XRv 9000 Centralized Route Processor"
+PID: R-IOSXRV9000-RP-C , VID: V01, SN: 4F41D400FC5
+
+NAME: "Rack 0", DESCR: "Cisco IOS-XRv 9000 Centralized Virtual Router"
+PID: R-IOSXRV9000-CC   , VID: V01, SN: 5F5AD38B6DF
+

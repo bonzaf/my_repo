@@ -1,0 +1,209 @@
+hostname: R1
+username:
+  - name: sa
+    group:
+      - root-lr
+      - cisco-support
+    secret: "$6$wuKGq/iZYR7N5q/.$JkPosWRsWS4xTi8Ql6XKxdz5.XzBj1Vp1d/Rp9jOIVUhO65DmaduSC/SSeV8lEOC3lvs.L.DGU5F2hFEYhteY."
+  - name: cisco
+    group:
+      - root-lr
+      - cisco-support
+    secret: "$6$UZJD//NpHEx22//.$7E5mcFWafHMj7V2VXWg78CRUqKCGVSFE5jBW9VOeAmxbvsDIDtLHHV0U1ooGpXqbwGEwr4BvrXccsRN/I.lUa0"
+  - name: GAUNO
+    group:
+      - root-lr
+      - cisco-support
+    secret: "$6$wuKGq/iZYR7N5q/.$JkPosWRsWS4xTi8Ql6XKxdz5.XzBj1Vp1d/Rp9jOIVUhO65DmaduSC/SSeV8lEOC3lvs.L.DGU5F2hFEYhteY."
+aaa:
+  authorization:
+    exec: default local
+    commands: default none
+  authentication:
+    login: default local
+cdp: true
+vrf:
+  - name: OVERRIDE
+    address-family:
+      ipv4:
+        unicast:
+          import_route_target:
+            - 25106:2
+            - 65000:2
+          export_route_target:
+            - 65000:1
+            - 65000:2
+line:
+  default:
+    authorization_exec: default
+    authorization_commands: default
+    login_authentication: default
+    exec_timeout: 60 0
+    session_limit: 10
+    session_timeout: 100
+    transport_input: all
+    transport_output: all
+vty_pool:
+  default:
+    range: 0-99
+    line_template: default
+call_home:
+  service_active: true
+  contact: smart-licensing
+  profile:
+    name: CiscoTAC-1
+    active: true
+    destination_transport_method: http
+interface:
+  - name: Loopback0
+    description: ROUTER-ID
+    ipv4_address: 1.1.1.1 255.255.255.255
+  - name: Loopback20
+    ipv4_address: 20.20.20.20 255.255.255.255
+  - name: Loopback100
+    vrf: OVERRIDE
+    ipv4_address: 100.100.100.100 255.255.255.255
+  - name: MgmtEth0/RP0/CPU0/0
+    ipv4_address: 10.0.0.3 255.255.255.0
+  - name: GigabitEthernet0/0/0/0
+    shutdown: true
+  - name: GigabitEthernet0/0/0/1
+    description: Uplink to ISP2
+    ipv4_address: 192.168.20.1 255.255.255.254
+  - name: GigabitEthernet0/0/0/2
+    shutdown: true
+  - name: GigabitEthernet0/0/0/3
+    shutdown: true
+  - name: GigabitEthernet0/0/0/4
+    shutdown: true
+  - name: GigabitEthernet0/0/0/5
+    shutdown: true
+  - name: GigabitEthernet0/0/0/6
+    description: -- TO R2!  --
+    cdp: true
+    ipv4_address: 172.31.1.0 255.255.255.254
+route_policy:
+  - name: PASS
+    policy: pass
+  - name: TABLE-POLICY
+    policy:
+      if: destination in (2.2.2.2/32)
+      then: set administrative-distance 150
+      else: pass
+  - name: BGP_LOOPBACK_0
+    policy:
+      set:
+        - label-index 1001
+        - community (65000:31210)
+        - aigp-metric igp-cost
+router:
+  ospf:
+    name: XHAUL
+    nsr: true
+    log_adjacency_changes_detail: true
+    router_id: 2.2.2.2
+    segment_routing:
+      mpls: true
+      sr_prefer: true
+    auto_cost_reference_bandwidth: 1000000
+    max_metric_router_lsa_on_startup: 300
+    area:
+      id: 0.0.0.0
+      interface:
+        - name: Loopback0
+          passive: enable
+          prefix_sid_index: 1001
+        - name: GigabitEthernet0/0/0/5
+          bfd:
+            minimum_interval: 100
+            fast_detect: true
+            multiplier: 3
+          cost: 10
+          network: point-to-point
+        - name: GigabitEthernet0/0/0/6
+          bfd:
+            minimum_interval: 100
+            fast_detect: true
+            multiplier: 3
+          cost: 10
+          network: point-to-point
+  bgp:
+    asn: 65000
+    nsr: true
+    router_id: 1.1.1.1
+    mpls_activate: true
+    interface: GigabitEthernet0/0/0/6
+    graceful_restart: true
+    log_neighbor_changes_detail: true
+    ibgp_policy_out_enforce_modifications: true
+    address_family:
+      ipv4_unicast:
+        table_policy: TABLE-POLICY
+        network:
+          - 1.1.1.1/32
+            route_policy: BGP_LOOPBACK_0
+        allocate_label: all
+      vpnv4_unicast:
+        retain_route_target: all
+      ipv4_rt_filter: {}
+      ipv4_mvpn: {}
+      l2vpn_evpn: {}
+      link_state_link_state: {}
+    neighbor:
+      ip: 2.2.2.2
+      remote_as: 25106
+      bfd:
+        fast_detect: true
+        multiplier: 3
+        minimum_interval: 250
+      ebgp_multihop: 255
+      dscp: cs6
+      description: -= R2 =-
+      update_source: Loopback0
+      address_family:
+        ipv4_labeled_unicast:
+          send_community_ebgp: true
+          route_policy:
+            in: PASS
+            out: PASS
+          send_extended_community_ebgp: true
+          next_hop_unchanged: true
+        vpnv4_unicast:
+          maximum_prefix: 8000 75 restart 3
+          route_policy:
+            in: PASS
+            out: PASS
+          next_hop_unchanged: true
+        l2vpn_evpn:
+          maximum_prefix: 8000 75 restart 3
+          send_community_ebgp: true
+          route_policy:
+            in: PASS
+            out: PASS
+          send_extended_community_ebgp: true
+          next_hop_unchanged: true
+    vrf:
+      name: OVERRIDE
+      rd: 65000:1
+      address_family:
+        ipv4_unicast:
+          redistribute:
+            - connected
+            - static
+mpls_oam: true
+segment_routing:
+  global_block: 16000 23999
+  local_block: 15000 15999
+  traffic_eng:
+    logging:
+      policy_status: true
+ssh:
+  client_v2: true
+  server_enable_cipher:
+    - aes-cbc
+    - 3des-cbc
+  server_logging: true
+  server_session_limit: 20
+  server_v2: true
+  server_vrf: default
+

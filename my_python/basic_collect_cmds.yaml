@@ -1,0 +1,29 @@
+###################################################################
+oper_data_parsers:  # Parsers for odata for health-checks
+  asr9k:
+    - name: show_run #collect all config
+      requests:
+        - cmd: 'show run'
+          type: static
+    - name: show_inventory # collect SN and inventory
+      requests:
+        - cmd: 'show inventory'
+          type: static
+  ncs54:
+    - name: show_run #collect all config
+      requests:
+        - cmd: 'show run'
+          type: static
+    - name: show_inventory # collect SN and inventory
+      requests:
+        - cmd: 'show inventory'
+          type: static
+  xrv:
+    - name: show_run #collect all config
+      requests:
+        - cmd: 'show run'
+          type: static
+    - name: show_inventory # collect SN and inventory
+      requests:
+        - cmd: 'show inventory'
+          type: static

@@ -1,0 +1,245 @@
+RP/0/RP0/CPU0:R3#
+Thu Aug  1 10:10:53.900 UTC
+Building configuration...
+!! IOS XR Configuration 7.4.2
+!! Last configuration change at Sun Jul  7 13:27:54 2024 by sa
+!
+hostname R3
+username cisco
+ group root-lr
+ group cisco-support
+ secret 10 $6$UZJD//NpHEx22//.$7E5mcFWafHMj7V2VXWg78CRUqKCGVSFE5jBW9VOeAmxbvsDIDtLHHV0U1ooGpXqbwGEwr4BvrXccsRN/I.lUa0
+!
+username sa
+ group root-lr
+ group cisco-support
+ secret 10 $6$wuKGq/iZYR7N5q/.$JkPosWRsWS4xTi8Ql6XKxdz5.XzBj1Vp1d/Rp9jOIVUhO65DmaduSC/SSeV8lEOC3lvs.L.DGU5F2hFEYhteY.
+!
+username GAUNO
+ group root-lr
+ group cisco-support
+ secret 10 $6$wuKGq/iZYR7N5q/.$JkPosWRsWS4xTi8Ql6XKxdz5.XzBj1Vp1d/Rp9jOIVUhO65DmaduSC/SSeV8lEOC3lvs.L.DGU5F2hFEYhteY.
+!
+aaa authorization exec default local
+aaa authorization commands default none
+aaa authentication login default local
+cdp
+vrf OVERRIDE
+ address-family ipv4 unicast
+  import route-target
+   25106:2
+   65000:2
+  !
+  export route-target
+   65000:1
+   65000:2
+  !
+ !
+!
+line default
+ authorization exec default
+ authorization commands default
+ login authentication default
+ exec-timeout 60 0
+ session-limit 10
+ session-timeout 100
+ transport input all
+ transport output all
+!
+vty-pool default 0 99 line-template default
+call-home
+ service active
+ contact smart-licensing
+ profile CiscoTAC-1
+  active
+  destination transport-method http
+ !
+!
+interface Loopback0
+ description ROUTER-ID
+ ipv4 address 3.3.3.3 255.255.255.255
+!
+interface Loopback200
+ vrf OVERRIDE
+ ipv4 address 200.200.200.200 255.255.255.255
+!
+interface MgmtEth0/RP0/CPU0/0
+ ipv4 address 10.0.0.7 255.255.255.0
+!
+interface GigabitEthernet0/0/0/0
+ shutdown
+!
+interface GigabitEthernet0/0/0/1
+ shutdown
+!
+interface GigabitEthernet0/0/0/2
+ shutdown
+!
+interface GigabitEthernet0/0/0/3
+ shutdown
+!
+interface GigabitEthernet0/0/0/4
+ shutdown
+!
+interface GigabitEthernet0/0/0/5
+ description -= TO R2 =-
+ ipv4 address 172.30.0.0 255.255.255.254
+!
+interface GigabitEthernet0/0/0/6
+ shutdown
+!
+route-policy PASS
+  pass
+end-policy
+!
+route-policy TABLE-POLICY
+  if destination in (2.2.2.2/32) then
+    set administrative-distance 150
+  else
+    pass
+  endif
+end-policy
+!
+route-policy BGP_LOOPBACK_0
+  set label-index 1003
+  set community (65000:31210)
+  set aigp-metric igp-cost
+end-policy
+!
+router ospf REGION
+ nsr
+ log adjacency changes detail
+ router-id 3.3.3.3
+ segment-routing mpls
+ segment-routing sr-prefer
+ auto-cost reference-bandwidth 1000000
+ max-metric router-lsa on-startup 300
+ area 0.0.0.0
+  interface Loopback0
+   passive enable
+   prefix-sid index 1003
+  !
+  interface GigabitEthernet0/0/0/5
+   bfd minimum-interval 100
+   bfd fast-detect
+   bfd multiplier 3
+   cost 10
+   network point-to-point
+  !
+ !
+!
+router bgp 65000
+ nsr
+ bgp router-id 3.3.3.3
+ mpls activate
+  interface GigabitEthernet0/0/0/5
+ !
+ bgp graceful-restart
+ bgp log neighbor changes detail
+ ibgp policy out enforce-modifications
+ address-family ipv4 unicast
+  table-policy TABLE-POLICY
+  network 3.3.3.3/32 route-policy BGP_LOOPBACK_0
+  allocate-label all
+ !
+ address-family vpnv4 unicast
+  retain route-target all
+ !
+ address-family ipv4 rt-filter
+ !
+ address-family ipv4 mvpn
+ !
+ address-family l2vpn evpn
+ !
+ address-family link-state link-state
+ !
+ neighbor 2.2.2.2
+  remote-as 25106
+  bfd fast-detect
+  bfd multiplier 3
+  bfd minimum-interval 250
+  ebgp-multihop 255
+  dscp cs6
+  description -= R2 =-
+  update-source Loopback0
+  address-family ipv4 labeled-unicast
+   send-community-ebgp
+   route-policy PASS in
+   route-policy PASS out
+   send-extended-community-ebgp
+   next-hop-unchanged
+  !
+  address-family vpnv4 unicast
+   maximum-prefix 8000 75 restart 3
+   route-policy PASS in
+   route-policy PASS out
+   next-hop-unchanged
+  !
+  address-family l2vpn evpn
+   maximum-prefix 8000 75 restart 3
+   send-community-ebgp
+   route-policy PASS in
+   route-policy PASS out
+   send-extended-community-ebgp
+   next-hop-unchanged
+  !
+ !
+ vrf OVERRIDE
+  rd 65000:3
+  address-family ipv4 unicast
+   redistribute connected
+   redistribute static
+  !
+ !
+!
+mpls oam
+!
+segment-routing
+ global-block 16000 23999
+ local-block 15000 15999
+ traffic-eng
+  logging
+   policy status
+  !
+ !
+!
+ssh client v2
+ssh server enable cipher aes-cbc 3des-cbc
+ssh server logging
+ssh server session-limit 20
+ssh server v2
+ssh server vrf default
+end
+
+RP/0/RP0/CPU0:R3#
+Thu Aug  1 10:10:54.149 UTC
+NAME: "0/0", DESCR: "Cisco IOS-XRv 9000 Centralized Line Card"
+PID: R-IOSXRV9000-LC-C , VID: V01, SN: 9ACE8E6700A
+
+NAME: "0/0/0", DESCR: "N/A"
+PID: PORT-1G-NIC       , VID: N/A, SN: N/A
+
+NAME: "0/0/1", DESCR: "N/A"
+PID: PORT-1G-NIC       , VID: N/A, SN: N/A
+
+NAME: "0/0/2", DESCR: "N/A"
+PID: PORT-1G-NIC       , VID: N/A, SN: N/A
+
+NAME: "0/0/3", DESCR: "N/A"
+PID: PORT-1G-NIC       , VID: N/A, SN: N/A
+
+NAME: "0/0/4", DESCR: "N/A"
+PID: PORT-1G-NIC       , VID: N/A, SN: N/A
+
+NAME: "0/0/5", DESCR: "N/A"
+PID: PORT-1G-NIC       , VID: N/A, SN: N/A
+
+NAME: "0/0/6", DESCR: "N/A"
+PID: PORT-1G-NIC       , VID: N/A, SN: N/A
+
+NAME: "0/RP0", DESCR: "Cisco IOS-XRv 9000 Centralized Route Processor"
+PID: R-IOSXRV9000-RP-C , VID: V01, SN: 8018637F611
+
+NAME: "Rack 0", DESCR: "Cisco IOS-XRv 9000 Centralized Virtual Router"
+PID: R-IOSXRV9000-CC   , VID: V01, SN: E4C9FADA1A7
+

@@ -1,0 +1,46 @@
+---
+- name: Gather device config and send to NetBox
+  hosts: routers
+  gather_facts: no
+  tasks:
+    - name: Gather device facts
+      cisco.iosxr.iosxr_facts:
+        gather_subset: all
+      register: device_facts
+
+    - name: Send device info to NetBox
+      netbox.netbox.netbox_device:
+        url: "{{ lookup('env', 'NETBOX_URL') }}"
+        token: "{{ lookup('env', 'NETBOX_TOKEN') }}"
+        data:
+          name: "{{ inventory_hostname }}"
+          device_role: PE
+          device_type: xrv
+          site: virt
+          status: active
+        state: present
+
+    - name: Send interfaces info to NetBox
+      netbox.netbox.netbox_device_interface:
+        url: "{{ lookup('env', 'NETBOX_URL') }}"
+        token: "{{ lookup('env', 'NETBOX_TOKEN') }}"
+        data:
+          device: "{{ inventory_hostname }}"
+          name: "{{ item.key }}"
+          type: other
+          enabled: "{{ item.value.enabled }}"
+        loop: "{{ device_facts.ansible_net_interfaces | dict2items }}"
+        state: present
+
+    - name: Send IP addresses info to NetBox
+      netbox.netbox.netbox_ip_address:
+        url: "{{ lookup('env', 'NETBOX_URL') }}"
+        token: "{{ lookup('env', 'NETBOX_TOKEN') }}"
+        data:
+          address: "{{ item.value.ipv4[0].address }}"
+          interface: "{{ item.key }}"
+          status: active
+        loop: "{{ device_facts.ansible_net_interfaces | dict2items }}"
+        when: item.value.ipv4 is defined
+        state: present
+
