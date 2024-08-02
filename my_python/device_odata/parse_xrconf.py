@@ -305,7 +305,7 @@ def parse_config_file(file_path_list):
         results.append(result)
 
         # Write the result to a YAML file
-        output_file_path = f"{hostname}_parsed_config.yaml"
+        output_file_path = f"/root/my_repo/my_python/parsed_dev_data/{hostname}_parsed_config.yaml"
         with open(output_file_path, 'w') as file:
             yaml.dump(result, file, default_flow_style=False)
         print(f"Configuration has been parsed and saved to {output_file_path}")
@@ -314,7 +314,7 @@ def parse_config_file(file_path_list):
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("Usage: python parse_configs.py <config_file1> <config_file2> ...")
+        print("Usage: python parse_configs.py /parsed_dev_data/<config_file1> <config_file2> ...")
         sys.exit(1)
 
     config_file_path_list = sys.argv[1:]
